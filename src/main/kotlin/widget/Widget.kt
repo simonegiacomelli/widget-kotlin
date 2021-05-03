@@ -7,6 +7,8 @@ import org.w3c.dom.get
 import kotlin.reflect.KProperty
 
 open class Widget(val html: String) {
+
+    var namedDescendant: Map<String, Widget> = emptyMap()
     lateinit var widgetFactory: WidgetFactory
     lateinit var widgetHolder: WidgetHolder
     lateinit var explicitContainer: Element
@@ -35,11 +37,12 @@ open class Widget(val html: String) {
                 "These widget needs to be expanded:" +
                         " [${toExpand.joinToString { it.tagName }}.] in html: [$html] but no ${WidgetFactory::class.simpleName} is available to this widget"
             )
-        toExpand.forEach {
+        this.namedDescendant = toExpand.map {
             val widget = widgetFactory.new(it.tagName)
             widget.explicitContainer = it
             widget.container //force expand
-        }
+            widget
+        }.filter { it.container.id.isNotBlank() }.associateBy({ it.container.id }, { it })
 
     }
 
@@ -52,7 +55,13 @@ open class Widget(val html: String) {
     }
 
     inline operator fun <reified T> getValue(thisRef: Any?, property: KProperty<*>): T {
+        container // force expand to collect descendants
         val name = property.name
+        val widget = this.namedDescendant[name]
+
+        if (widget != null && T::class.isInstance(widget)) {
+            return widget as T
+        }
         val element = container.querySelector("#$name")
             ?: throw ElementNotFound("Name: [$name] html: [$html]")
         return element as T

@@ -3,6 +3,7 @@ package widget
 import kotlinx.browser.document
 import org.w3c.dom.HTMLButtonElement
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.HTMLSpanElement
 import kotlin.test.*
 
 class TestWidget {
@@ -41,6 +42,35 @@ class TestWidget {
             val divDoNotExist: HTMLElement by target
             val s = divDoNotExist.id
         }
+    }
+
+    @Test
+    fun shouldProvideDelegateToAccessWidget() {
+
+        class Widget1 : Widget("""<span id="span1">original</span>""") {
+            val span1: HTMLSpanElement by this
+        }
+
+        val target = Widget("""<w-widget1 id="widget1"></w-widget1>""")
+        target.widgetFactory = WidgetFactory().apply { register("w-widget1") { Widget1() } }
+
+        fun testWidget1Type() {
+            val widget1: Widget1 by target
+            assert(widget1.span1.innerHTML).contains("original")
+        }
+
+        fun testWidgetBaseType() {
+            val widget1: Widget by target
+            assertTrue(Widget1::class.isInstance(widget1))
+        }
+
+        fun testHtmlType() {
+            val widget1: HTMLElement by target
+            assert(widget1.id).contains("widget1")
+        }
+        testWidget1Type()
+        testWidgetBaseType()
+        testHtmlType()
     }
 
     @Test
@@ -104,6 +134,7 @@ class TestWidget {
         var callCount = 0
         var methodCalled = false
         var lambdaCalled = false
+
         class Widget1 : Widget("""<button id="button">click me</button>""") {
             val button: HTMLButtonElement by this
             override fun afterRender() {
@@ -132,6 +163,7 @@ class TestWidget {
         widget.afterRender { container }
         widget.container
     }
+
 
 }
 
@@ -200,7 +232,7 @@ class TestWidgetHolder {
         assert(target.container.innerHTML).contains(twoDivsMarkers)
     }
 
-
+//TODO HTMLSpanElement by this when actually it is a HTMLButtonElement
 //TODO handle nested widgets
 //TODO handle templates
 //TODO templates that contains widget, e.g. rackmanager.IpListWidget.html
