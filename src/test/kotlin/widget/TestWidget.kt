@@ -100,21 +100,30 @@ class TestWidget {
     }
 
     @Test
-    fun canUseAfterRenderLambda_AndUseDefinedElements() {
+    fun canUseAfterRenderMethodAndLambda_AndUseDefinedElements() {
         var callCount = 0
-
+        var methodCalled = false
+        var lambdaCalled = false
         class Widget1 : Widget("""<button id="button">click me</button>""") {
             val button: HTMLButtonElement by this
+            override fun afterRender() {
+                methodCalled = true
+                callCount++
+                button.onclick = { }
+            }
         }
 
         val target = Widget1()
         target.afterRender {
+            lambdaCalled = true
             callCount++
             button.onclick = { }
         }
         assertEquals(0, callCount)
         target.container
-        assertEquals(1, callCount)
+        assertTrue(lambdaCalled)
+        assertTrue(methodCalled)
+        assertEquals(2, callCount)
     }
 
     @Test

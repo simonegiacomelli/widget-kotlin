@@ -19,6 +19,7 @@ open class Widget(val html: String) {
             expand(this)
             if (!called) {
                 called = true
+                afterRender()
                 afterRenderCallback()
             }
         }
@@ -72,6 +73,7 @@ open class Widget(val html: String) {
             return widgetHolder
         }
     var afterRenderCallback: Widget.() -> Unit = { }
+    open fun afterRender() {}
 }
 
 fun <T : Widget> T.afterRender(lambda: T.() -> Unit) {
