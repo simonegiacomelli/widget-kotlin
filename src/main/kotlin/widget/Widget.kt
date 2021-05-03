@@ -12,20 +12,15 @@ open class Widget(val html: String) {
     lateinit var explicitContainer: Element
     var called = false
     val container: Element by lazy {
-        containerNoAfterRender.apply {
-            if (!called) {
-                called = true
-                afterRenderCallback()
-            }
-        }
-    }
-
-    val containerNoAfterRender: Element by lazy {
         if (!::explicitContainer.isInitialized)
             explicitContainer = document.createElement("div")
         explicitContainer.apply {
             innerHTML = html
             expand(this)
+            if (!called) {
+                called = true
+                afterRenderCallback()
+            }
         }
     }
 
@@ -57,7 +52,7 @@ open class Widget(val html: String) {
 
     inline operator fun <reified T> getValue(thisRef: Any?, property: KProperty<*>): T {
         val name = property.name
-        val element = containerNoAfterRender.querySelector("#$name")
+        val element = container.querySelector("#$name")
             ?: throw ElementNotFound("Name: [$name] html: [$html]")
         return element as T
     }
@@ -99,7 +94,7 @@ class WidgetFactory {
 }
 
 class WidgetHolder : Widget("") {
-    private val stack = mutableListOf<Widget>()
+    val stack = mutableListOf<Widget>()
 
     override fun show(widget: Widget) {
         widget.widgetHolder = this
