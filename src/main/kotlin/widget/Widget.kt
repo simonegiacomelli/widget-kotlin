@@ -10,10 +10,13 @@ open class Widget(val html: String) {
     lateinit var widgetFactory: WidgetFactory
     lateinit var widgetHolder: WidgetHolder
     lateinit var explicitContainer: Element
-
+    var called = false
     val container: Element by lazy {
         containerNoAfterRender.apply {
-            afterRenderCallback()
+            if (!called) {
+                called = true
+                afterRenderCallback()
+            }
         }
     }
 
@@ -24,10 +27,6 @@ open class Widget(val html: String) {
             innerHTML = html
             expand(this)
         }
-    }
-
-    fun expand(widget: Widget) {
-
     }
 
     private fun expand(element: Element) {

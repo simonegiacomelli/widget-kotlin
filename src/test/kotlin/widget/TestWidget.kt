@@ -115,7 +115,13 @@ class TestWidget {
         assertEquals(0, callCount)
         target.container
         assertEquals(1, callCount)
+    }
 
+    @Test
+    fun afterRenderShouldBeAbleToAccess_container() {
+        val widget = Widget("""<button id="button">click me</button>""")
+        widget.afterRender { container }
+        widget.container
     }
 
 }
