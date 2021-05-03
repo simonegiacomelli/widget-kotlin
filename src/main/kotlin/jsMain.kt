@@ -22,7 +22,9 @@ fun main() {
                |<div id="rows"></div>
                |""".trimMargin()
 
-        ).apply {
+        ).also {
+            it.widgetFactory = widgetFactory
+        }.apply {
             val c = counter++
             val counter: HTMLSpanElement by this
             val close: HTMLButtonElement by this
@@ -40,8 +42,6 @@ fun main() {
                     rows.appendChild(it.container)
                 }
             }
-        }.also {
-            it.widgetFactory = widgetFactory
         }
     }
 
