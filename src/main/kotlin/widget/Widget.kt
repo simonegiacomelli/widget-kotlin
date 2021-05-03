@@ -12,19 +12,22 @@ open class Widget(val html: String) {
     lateinit var explicitContainer: Element
 
     val container: Element by lazy {
-        val result = containerNoAfterRender
-        afterRenderCallback()
-        result
+        containerNoAfterRender.apply {
+            afterRenderCallback()
+        }
     }
-    val containerNoAfterRender: Element by lazy { lazyContainer() }
 
-    private fun lazyContainer(): Element {
+    val containerNoAfterRender: Element by lazy {
         if (!::explicitContainer.isInitialized)
             explicitContainer = document.createElement("div")
-        val c = explicitContainer
-        c.innerHTML = html
-        expand(c)
-        return c
+        explicitContainer.apply {
+            innerHTML = html
+            expand(this)
+        }
+    }
+
+    fun expand(widget: Widget) {
+
     }
 
     private fun expand(element: Element) {
@@ -35,7 +38,7 @@ open class Widget(val html: String) {
         if (!::widgetFactory.isInitialized)
             throw MissingWidgetFactory(
                 "These widget needs to be expanded:" +
-                        " [${toExpand.joinToString { it.tagName }}.] in html: [$html] but no WidgetManager is available to this widget"
+                        " [${toExpand.joinToString { it.tagName }}.] in html: [$html] but no ${WidgetFactory::class.simpleName} is available to this widget"
             )
         toExpand.forEach {
             val widget = widgetFactory.new(it.tagName)
@@ -86,7 +89,7 @@ class MissingWidgetFactory(msg: String) : Throwable(msg)
 class MissingWidgetHolder(msg: String) : Throwable(msg)
 
 class WidgetFactory {
-    val list = mutableMapOf<String, () -> Widget>()
+    private val list = mutableMapOf<String, () -> Widget>()
     fun register(name: String, function: () -> Widget) {
         list[name.toUpperCase()] = function
     }

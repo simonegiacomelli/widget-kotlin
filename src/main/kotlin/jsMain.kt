@@ -1,10 +1,16 @@
 import kotlinx.browser.document
 import org.w3c.dom.*
 import widget.Widget
+import widget.WidgetFactory
 import widget.WidgetHolder
+import widget.afterRender
 
 fun main() {
     val widgetHolder = WidgetHolder()
+    val widgetFactory = WidgetFactory().apply {
+        register("w-ButtonWidget") { ButtonWidget() }
+    }
+
     var counter = 0
     fun MainWidget(): Widget {
         return Widget(
@@ -25,18 +31,21 @@ fun main() {
             val rows: HTMLDivElement by this
             counter.innerHTML = "counter $c"
             close.onclick = { close() }
-            new.onclick = { widgetHolder.show(MainWidget()) }
+            new.onclick = { show(MainWidget()) }
             newRow.onclick = {
-//                set(RowWidget()).also {
-//                    it.label.innerHTML = "label count: ${rows.childElementCount}"
-//                    it.checkbox.checked = rows.childElementCount % 2 == 0
-//                    rows.appendChild(it.elementInstance)
-//                }
+                RowWidget().also {
+                    it.widgetFactory = widgetFactory
+                    it.label.innerHTML = "label count: ${rows.childElementCount}"
+                    it.checkbox.checked = rows.childElementCount % 2 == 0
+                    rows.appendChild(it.container)
+                }
             }
+        }.also {
+            it.widgetFactory = widgetFactory
         }
     }
 
-    val loginWidget = ResourceWidget(
+    val loginWidget = Widget(
         """
             |username: <input type="text" id="user"> <br>
             |password: <input type="text" id="pass"> <br>
@@ -48,18 +57,12 @@ fun main() {
 //
         val login: HTMLButtonElement by this
 
-//        afterRender {
+        afterRender {
             login.onclick = { widgetHolder.show(MainWidget()) }
-//        }
+        }
     }
-    document.body?.appendChild(widgetHolder.elementInstance)
+    document.body?.appendChild(widgetHolder.container)
     widgetHolder.show(loginWidget)
 }
 
-typealias ResourceWidget = Widget
-
-private val Widget.elementInstance: Element
-    get() {
-        return container
-    }
 
