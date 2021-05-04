@@ -13,27 +13,27 @@ open class Widget(val html: String) {
     lateinit var widgetFactory: WidgetFactory
     lateinit var widgetHolder: WidgetHolder
     lateinit var explicitContainer: Element
-    private val afterRenderOnce = OnlyOnce { afterRender(); afterRenderCallback() }
 
-    val container: Element by lazy {
-        if (!::explicitContainer.isInitialized)
-            explicitContainer = document.createElement("div")
-        else {
+    private val expandOnce = OnlyOnce { expandContainer(); }
+
+    val container: Element by lazy { expandOnce.invoke(); explicitContainer }
+
+    private fun expandContainer() {
+        if (::explicitContainer.isInitialized)
             params.elements.addAll(explicitContainer.children.asList())
-        }
-        explicitContainer.apply {
-            innerHTML = html
-            expand(this)
-            afterRenderOnce.invoke()
-            log("container end html: [$html] -----")
-        }
+        else
+            explicitContainer = document.createElement("div")
+
+        val element = explicitContainer
+        element.innerHTML = html
+        val toExpand = element.collectWidgetToExpand()
+        if (toExpand.isNotEmpty())
+            expandContainedWidgets(toExpand)
+        afterRender()
+        afterRenderCallback()
     }
 
-    private fun expand(element: Element) {
-        //find widgets that needs to be expanded
-        val toExpand = element.collectWidgetToExpand()
-        if (toExpand.isEmpty())
-            return
+    private fun expandContainedWidgets(toExpand: List<Element>) {
         if (!::widgetFactory.isInitialized)
             throw MissingWidgetFactory(
                 "These widget needs to be expanded:" +
@@ -45,7 +45,6 @@ open class Widget(val html: String) {
             widget.container //force expand
             widget
         }.filter { it.container.id.isNotBlank() }.associateBy({ it.container.id }, { it })
-
     }
 
     private fun Element.collectWidgetToExpand(): List<Element> {
