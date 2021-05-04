@@ -35,7 +35,7 @@ open class Widget(val html: String) {
         if (!::widgetFactory.isInitialized)
             throw MissingWidgetFactory(
                 "These widget needs to be expanded:" +
-                        " [${toExpand.joinToString { it.tagName }}.] in html: [$html] but no ${WidgetFactory::class.simpleName} is available to this widget"
+                        " [${toExpand.joinToString { it.tagName }}] but no ${WidgetFactory::class.simpleName} is available to this widget having html: [$html] "
             )
         this.namedDescendant = toExpand.map {
             val widget = widgetFactory.new(it.tagName)
