@@ -4,7 +4,6 @@ import kotlinx.browser.document
 import org.w3c.dom.Element
 import org.w3c.dom.asList
 import org.w3c.dom.get
-import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
 open class Widget(val html: String) {
@@ -14,23 +13,18 @@ open class Widget(val html: String) {
     lateinit var widgetFactory: WidgetFactory
     lateinit var widgetHolder: WidgetHolder
     lateinit var explicitContainer: Element
-    var called = false
+    private val afterRenderOnce = OnlyOnce { afterRender(); afterRenderCallback() }
+
     val container: Element by lazy {
-        log("container start html: [$html] isInit = ${::explicitContainer.isInitialized} -----")
         if (!::explicitContainer.isInitialized)
             explicitContainer = document.createElement("div")
         else {
             params.elements.addAll(explicitContainer.children.asList())
-            log("params.elements.size = ${params.elements.size}")
         }
         explicitContainer.apply {
             innerHTML = html
             expand(this)
-            if (!called) {
-                called = true
-                afterRender()
-                afterRenderCallback()
-            }
+            afterRenderOnce.invoke()
             log("container end html: [$html] -----")
         }
     }
@@ -144,4 +138,13 @@ class WidgetHolder : Widget("") {
         closeCurrent()
     }
 
+}
+
+class OnlyOnce(val function: () -> Unit) {
+    var called = false
+    fun invoke() {
+        if (called) return
+        called = true
+        function()
+    }
 }
