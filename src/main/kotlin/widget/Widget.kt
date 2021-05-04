@@ -16,7 +16,11 @@ open class Widget(val html: String) {
 
     private val expandOnce = OnlyOnce { expandContainer(); }
 
-    val container: Element by lazy { expandOnce.invoke(); explicitContainer }
+    val container: Element get() = computeContainer()
+
+    private fun computeContainer(): Element {
+        expandOnce.invoke(); return explicitContainer
+    }
 
     private fun expandContainer() {
         if (::explicitContainer.isInitialized)
@@ -24,22 +28,23 @@ open class Widget(val html: String) {
         else
             explicitContainer = document.createElement("div")
 
-        val element = explicitContainer
-        element.innerHTML = html
-        val toExpand = element.collectWidgetToExpand()
-        if (toExpand.isNotEmpty())
-            expandContainedWidgets(toExpand)
+        val container = explicitContainer
+        container.innerHTML = html
+        expandContainedWidgetIfAny(container)
         afterRender()
         afterRenderCallback()
     }
 
-    private fun expandContainedWidgets(toExpand: List<Element>) {
+    private fun expandContainedWidgetIfAny(element: Element) {
+        val toExpand = element.collectWidgetToExpand()
+        if (toExpand.isEmpty())
+            return
         if (!::widgetFactory.isInitialized)
             throw MissingWidgetFactory(
                 "These widget needs to be expanded:" +
                         " [${toExpand.joinToString { it.tagName }}] but no ${WidgetFactory::class.simpleName} is available to this widget having html: [$html] "
             )
-        this.namedDescendant = toExpand.map {
+        namedDescendant = toExpand.map {
             val widget = widgetFactory.new(it.tagName)
             widget.explicitContainer = it
             widget.container //force expand
