@@ -1,11 +1,9 @@
 package widget
 
 import kotlinx.browser.document
-import org.w3c.dom.HTMLButtonElement
-import org.w3c.dom.HTMLDivElement
-import org.w3c.dom.HTMLElement
-import org.w3c.dom.HTMLSpanElement
+import org.w3c.dom.*
 import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KClass
 import kotlin.test.*
 
 class TestWidget {
@@ -194,12 +192,30 @@ class TestWidget {
             widgetFactory = wf
             val w1: Widget1 by this
             assertNotNull(w1.div1)
-            assert(w1.div1?.innerHTML?:"").contains("hello")
+            assert(w1.div1?.innerHTML ?: "").contains("hello")
             assert(w1.btn1.innerHTML).contains("click me")
         }
 
     }
 
+    @Test
+    fun classCastException_whenElement() {
+        val target = Widget("""<button id="btn1"></button>""")
+        val btn1: HTMLSpanElement by target
+        val exception = assertFailsWith<ClassCastException> { btn1.innerHTML }
+        val spanClassName = HTMLSpanElement::class.js.name
+        val buttonClassName = HTMLButtonElement::class.js.name
+        assert(exception.message ?: "").contains(spanClassName, buttonClassName)
+    }
+
+    @Test
+    fun classCastException_whenAnotherTypeEntirely() {
+        val target = Widget("""<button id="btn1"></button>""")
+        val btn1: String by target
+        val exception = assertFailsWith<ClassCastException> { btn1.length }
+        val buttonClassName = HTMLButtonElement::class.js.name
+        assert(exception.message ?: "").contains("String", buttonClassName)
+    }
 }
 
 class TestWidgetFactory {
@@ -273,10 +289,7 @@ class TestWidgetHolder {
 //TODO templates that contains widget, e.g. rackmanager.IpListWidget.html
 //TODO handle events, e.g.: afterRender
 //TODO WidgetHolder is a ResourceWidget. Is it necessary? just for the elementInstance?
-//TODO rethink if the call set(Widget1()).show() can be accepted as show(Widget1())
 //TODO is afterRender() good like this? Do we need to extend a class? or is it enough having a lambda?
-//TODO handle widget params. e.g.: <w-Widget1><button>hi</button></w-Widget1>
-
 
 }
 

@@ -4,6 +4,7 @@ import kotlinx.browser.document
 import org.w3c.dom.Element
 import org.w3c.dom.asList
 import org.w3c.dom.get
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 open class Widget(val html: String) {
@@ -70,6 +71,12 @@ open class Widget(val html: String) {
         }
         val element = container.querySelector("#$name")
             ?: throw ElementNotFound("Name: [$name] html: [$html]")
+        if (!T::class.isInstance(element))
+            throw ClassCastException(
+                "Element instance is of type ${element::class.js.name}" +
+                        " but delegate is of type ${(T::class as KClass<out Element>).js.name}. html: [$html]"
+            )
+
         return element as T
     }
 
