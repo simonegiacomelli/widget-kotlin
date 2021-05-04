@@ -4,18 +4,25 @@ import kotlinx.browser.document
 import org.w3c.dom.Element
 import org.w3c.dom.asList
 import org.w3c.dom.get
+import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
 open class Widget(val html: String) {
 
+    fun log(msg: String) = console.log("$msg\n")
     var namedDescendant: Map<String, Widget> = emptyMap()
     lateinit var widgetFactory: WidgetFactory
     lateinit var widgetHolder: WidgetHolder
     lateinit var explicitContainer: Element
     var called = false
     val container: Element by lazy {
+        log("container start html: [$html] isInit = ${::explicitContainer.isInitialized} -----")
         if (!::explicitContainer.isInitialized)
             explicitContainer = document.createElement("div")
+        else {
+            params.elements.addAll(explicitContainer.children.asList())
+            log("params.elements.size = ${params.elements.size}")
+        }
         explicitContainer.apply {
             innerHTML = html
             expand(this)
@@ -24,6 +31,7 @@ open class Widget(val html: String) {
                 afterRender()
                 afterRenderCallback()
             }
+            log("container end html: [$html] -----")
         }
     }
 
@@ -65,6 +73,15 @@ open class Widget(val html: String) {
         val element = container.querySelector("#$name")
             ?: throw ElementNotFound("Name: [$name] html: [$html]")
         return element as T
+    }
+
+    val params = Params()
+
+    class Params {
+        val elements = mutableListOf<Element>()
+        inline operator fun <reified T> getValue(thisRef: Any?, property: KProperty<*>): T? {
+            return elements.find { it.id == property.name } as T?
+        }
     }
 
     fun close() {

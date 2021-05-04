@@ -2,8 +2,10 @@ package widget
 
 import kotlinx.browser.document
 import org.w3c.dom.HTMLButtonElement
+import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLSpanElement
+import kotlin.properties.ReadOnlyProperty
 import kotlin.test.*
 
 class TestWidget {
@@ -164,6 +166,39 @@ class TestWidget {
         widget.container
     }
 
+    @Test
+    fun namelessParams_PassedByWidget() {
+        class Widget1 : Widget("""<button id="btn1">click me</button>""")
+
+        val wf = WidgetFactory().apply { register("w-widget1") { Widget1() } }
+        Widget("""<w-Widget1 id="w1"><div>hello</div><div>joe</div></w-Widget1>""").apply {
+            widgetFactory = wf
+            val w1: Widget1 by this
+            val elements = w1.params.elements
+            assertEquals(2, elements.size)
+            assert(elements[0].innerHTML).contains("hello")
+            assert(elements[1].innerHTML).contains("joe")
+        }
+
+    }
+
+    @Test
+    fun namedParams_PassedByWidget() {
+        class Widget1 : Widget("""<button id="btn1">click me</button>""") {
+            val div1: HTMLDivElement? by params
+            val btn1: HTMLButtonElement by this
+        }
+
+        val wf = WidgetFactory().apply { register("w-widget1") { Widget1() } }
+        Widget("""<w-Widget1 id="w1"><div id="div1">hello</div></w-Widget1>""").apply {
+            widgetFactory = wf
+            val w1: Widget1 by this
+            assertNotNull(w1.div1)
+            assert(w1.div1?.innerHTML?:"").contains("hello")
+            assert(w1.btn1.innerHTML).contains("click me")
+        }
+
+    }
 
 }
 
@@ -272,6 +307,7 @@ class TestAssert {
 
 private fun oneDiv() = Widget("""<div id="div1">foo</div>""")
 private fun twoDivs() = Widget("""<div id="div2">bar</div><div id="div3">baz</div>""")
+
 private val twoDivsMarkers = listOf("div2", "bar", "div3", "baz")
 private val oneDivMarkers = listOf("div1", "foo")
 
