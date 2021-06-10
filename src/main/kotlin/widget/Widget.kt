@@ -1,13 +1,19 @@
 package widget
 
 import kotlinx.browser.document
-import org.w3c.dom.Element
-import org.w3c.dom.asList
-import org.w3c.dom.get
+import org.w3c.dom.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 open class Widget(val html: String) {
+    var htmlTemplate = false
+
+    constructor(template: HTMLTemplateElement) : this("") {
+        htmlTemplate = true
+        val array: Array<Node> = document.importNode(template.content, true).childNodes.asList().toTypedArray()
+        explicitContainer = document.createElement("div")
+        explicitContainer.append(*array)
+    }
 
     fun log(msg: String) = console.log("$msg\n")
     var namedDescendant: Map<String, Widget> = emptyMap()
@@ -28,9 +34,9 @@ open class Widget(val html: String) {
             params.elements.addAll(explicitContainer.children.asList())
         else
             explicitContainer = document.createElement("div")
-
         val container = explicitContainer
-        container.innerHTML = html
+        if (!htmlTemplate)
+            container.innerHTML = html
         expandContainedWidgetIfAny(container)
         afterRender()
         afterRenderCallback()
@@ -118,11 +124,11 @@ class MissingWidgetHolder(msg: String) : Throwable(msg)
 class WidgetFactory {
     private val list = mutableMapOf<String, () -> Widget>()
     fun register(name: String, function: () -> Widget) {
-        list[name.toUpperCase()] = function
+        list[name.uppercase()] = function
     }
 
     fun new(name: String): Widget {
-        return list[name.toUpperCase()]!!()
+        return list[name.uppercase()]!!()
     }
 }
 

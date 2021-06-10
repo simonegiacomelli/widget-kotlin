@@ -2,8 +2,6 @@ package widget
 
 import kotlinx.browser.document
 import org.w3c.dom.*
-import kotlin.properties.ReadOnlyProperty
-import kotlin.reflect.KClass
 import kotlin.test.*
 
 class TestWidget {
@@ -215,6 +213,30 @@ class TestWidget {
         val exception = assertFailsWith<ClassCastException> { btn1.length }
         val buttonClassName = HTMLButtonElement::class.js.name
         assert(exception.message ?: "").contains("String", buttonClassName)
+    }
+
+    @Test
+    fun template() {
+        val target =
+            Widget("""<table id="table1"></table><template id="template1"><tr id="tr1"><td id="td1"></td></tr></template>""")
+
+        val table1: HTMLTableElement by target
+        val template1: HTMLTemplateElement by target
+
+        class Template1 : Widget(template1) {
+            val tr1: HTMLTableRowElement by this
+            val td1: HTMLTableCellElement by this
+        }
+
+        table1.createTBody()
+        val t1 = Template1().also { it.td1.innerHTML = "foo" }
+        val t2 = Template1().also { it.td1.innerHTML = "bar" }
+        assert(target.container.innerHTML).not.contains("foo", "bar")
+        println(target.container.innerHTML)
+        table1.tBodies[0]!!.append(t1.tr1)
+        table1.tBodies[0]!!.append(t2.tr1)
+        println(target.container.innerHTML)
+        assert(target.container.innerHTML).contains("foo", "bar")
     }
 }
 
