@@ -1,5 +1,5 @@
 plugins {
-    kotlin("js") version "1.4.32"
+    kotlin("js") version "1.5.10"
 }
 
 group = "pro.jako"
@@ -15,7 +15,7 @@ dependencies {
 }
 
 kotlin {
-    js(IR) { //this make tests work
+    js(LEGACY) { //this make tests work
 //    js() { //this make source maps works :D
         binaries.executable()
         browser {
