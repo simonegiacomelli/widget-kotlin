@@ -1,3 +1,5 @@
+package example
+
 import org.w3c.dom.HTMLButtonElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLInputElement
@@ -10,7 +12,7 @@ class RowWidget : Widget(
     """
             |<label><input id="checkbox" type="checkbox"><span id="label">label here!</span></label> 
             |<button id="remove">remove</button>
-            |<w-ButtonWidget id="btnWidget"></w-ButtonWidget>
+            |<w-example.ButtonWidget id="btnWidget"></w-example.ButtonWidget>
             |""".trimMargin()
 ) {
     val checkbox: HTMLInputElement by this

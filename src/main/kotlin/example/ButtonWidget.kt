@@ -1,3 +1,5 @@
+package example
+
 import org.w3c.dom.HTMLButtonElement
 import widget.Widget
 import widget.afterRender
