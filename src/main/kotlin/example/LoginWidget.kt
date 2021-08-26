@@ -6,7 +6,6 @@ import org.w3c.dom.HTMLLabelElement
 import org.w3c.dom.events.MouseEvent
 import widget.Widget
 
-private var counter = 0
 
 class LoginWidget : Widget(
     """
@@ -14,6 +13,8 @@ class LoginWidget : Widget(
             |password: <input type="text" id="pass"> <br>
             |<br>
             |<button id="login">login</button> 
+            |<br>
+            |<button id="login2">click here to login without username or password</button> 
             |<br><br>
             |<label id="idMessage"></label>
             |""".trimMargin()
@@ -21,10 +22,12 @@ class LoginWidget : Widget(
     private val user: HTMLInputElement by this
     private val pass: HTMLInputElement by this
     private val login: HTMLButtonElement by this
+    private val login2: HTMLButtonElement by this
     private val idMessage: HTMLLabelElement by this
 
     override fun afterRender() {
         login.onclick = ::loginButtonClick
+        login2.onclick = ::showMainWidget
     }
 
     private fun loginButtonClick(event: MouseEvent) {
@@ -32,6 +35,10 @@ class LoginWidget : Widget(
         if (user.value.isEmpty() || pass.value.isEmpty())
             idMessage.innerHTML = "Please insert username and password. This is an example and any string will do."
         else
-            widgetHolder.show(MainWidget(widgetFactory) { counter++; counter })
+            showMainWidget(event)
+    }
+
+    private fun showMainWidget(event: MouseEvent) {
+        widgetHolder.show(MainWidget(widgetFactory))
     }
 }

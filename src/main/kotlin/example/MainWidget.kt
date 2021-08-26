@@ -6,7 +6,9 @@ import org.w3c.dom.HTMLSpanElement
 import widget.Widget
 import widget.WidgetFactory
 
-class MainWidget(wf: WidgetFactory, val getCounter: () -> Int) : Widget(
+private var globalCounter = 0
+
+class MainWidget(wf: WidgetFactory) : Widget(
     """
                |<h2><span id="counter"></span> welcome!</h2>
                |<button id="new">new</button>
@@ -28,9 +30,10 @@ class MainWidget(wf: WidgetFactory, val getCounter: () -> Int) : Widget(
     }
 
     private fun setup() {
-        counter.innerHTML = "counter ${getCounter()}"
+        globalCounter += 1
+        counter.innerHTML = "counter $globalCounter"
         close.onclick = { close() }
-        new.onclick = { show(MainWidget(widgetFactory, getCounter)) }
+        new.onclick = { show(MainWidget(widgetFactory)) }
         newRow.onclick = {
             RowWidget().also {
                 it.widgetFactory = widgetFactory
