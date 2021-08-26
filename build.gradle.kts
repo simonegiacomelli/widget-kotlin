@@ -1,5 +1,5 @@
 plugins {
-    kotlin("js") version "1.5.10"
+    kotlin("js") version "1.5.30"
 }
 
 group = "pro.jako"
@@ -15,8 +15,7 @@ dependencies {
 }
 
 kotlin {
-    js(LEGACY) { //this make tests work
-//    js() { //this make source maps works :D
+    js(IR) { //this make tests work
         binaries.executable()
         browser {
             commonWebpackConfig {
