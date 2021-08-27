@@ -4,9 +4,10 @@ import kotlinx.browser.document
 import widget.WidgetFactory
 import widget.WidgetHolder
 
-fun main(){
+fun main() {
     val widgetHolder = WidgetHolder()
     val widgetFactory = WidgetFactory().apply {
+        register("w-WidgetHolder") { WidgetHolder() }
         register("w-example.ButtonWidget") { ButtonWidget() }
     }
 
