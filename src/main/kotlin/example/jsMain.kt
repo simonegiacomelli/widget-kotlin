@@ -8,6 +8,7 @@ fun main() {
     val widgetHolder = WidgetHolder()
     val widgetFactory = WidgetFactory().apply {
         register("w-WidgetHolder") { WidgetHolder() }
+        register("w-SelectWidget") { SelectWidget() }
         register("w-example.ButtonWidget") { ButtonWidget() }
     }
 

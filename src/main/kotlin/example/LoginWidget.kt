@@ -40,6 +40,7 @@ class LoginWidget : Widget(
         addGallery("ButtonWidget") { ButtonWidget() }
         addGallery("NestingWidget") { NestingWidget() }
         addGallery("ValuesDropDownWidget") { ValuesDropDownWidget() }
+        addGallery("GalleryWidget") { GalleryWidget() }
     }
 
 
