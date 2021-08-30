@@ -69,16 +69,17 @@ open class Widget(val html: String) {
         return toExpand + nestedToExpand
     }
 
+    fun getElement(property: KProperty<*>): Element = container.querySelector("#${property.name}")
+        ?: throw ElementNotFound("Name: [${property.name}] html: [$html]")
+
     inline operator fun <reified T> getValue(thisRef: Any?, property: KProperty<*>): T {
         container // force expand to collect descendants
-        val name = property.name
-        val widget = this.namedDescendant[name]
+        val widget = this.namedDescendant[property.name]
 
         if (widget != null && T::class.isInstance(widget)) {
             return widget as T
         }
-        val element = container.querySelector("#$name")
-            ?: throw ElementNotFound("Name: [$name] html: [$html]")
+        val element = getElement(property)
         if (!T::class.isInstance(element))
             throw ClassCastException(
                 "Element instance is of type ${element::class.js.name}" +
@@ -117,10 +118,7 @@ open class Widget(val html: String) {
     inline fun <reified T : Widget> create(crossinline function: () -> T) =
         PropertyDelegateProvider { _: Any?, property ->
             val instance: T = function()
-            val name = property.name
-            val element = container.querySelector("#$name")
-            checkNotNull(element) { "Element with id=[$name] not found in container html=[${container.innerHTML}]" }
-            instance.explicitContainer = element
+            instance.explicitContainer = getElement(property)
             ReadOnlyProperty<Any?, T> { _, _ -> instance }
         }
 
