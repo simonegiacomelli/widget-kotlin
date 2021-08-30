@@ -238,6 +238,28 @@ class TestWidget {
         println(target.container.innerHTML)
         assert(target.container.innerHTML).contains("foo", "bar")
     }
+
+    @Test
+    fun useWidgetWithGenerics() {
+
+        class Gen1<T> : Widget("""<div id="idDiv"></div>""") {
+            val idDiv: HTMLDivElement by this
+            fun add(obj: T) {
+                idDiv.innerHTML += obj.toString()
+            }
+        }
+
+        class HelperItem(val str: String) {
+            override fun toString() = "-= $str =-"
+        }
+
+        val target = Widget("""<gen-w id="id1"></gen-w>""")
+        val id1 by target.create { Gen1<HelperItem>() }
+
+        id1.add(HelperItem("foo"))
+        id1.add(HelperItem("bar"))
+        assert(target.container.innerHTML).contains("-= foo =-", "-= bar =-")
+    }
 }
 
 class TestWidgetFactory {
