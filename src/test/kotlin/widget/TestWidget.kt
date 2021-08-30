@@ -34,7 +34,7 @@ class TestWidget {
     }
 
     @Test
-    fun withNonExistingDelegate_shouldThrowException() {
+    fun withNonExistingElement_shouldThrowException() {
         val target = twoDivs()
         assertFailsWith<ElementNotFound> {
             val divDoNotExist: HTMLElement by target
