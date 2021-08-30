@@ -117,9 +117,8 @@ open class Widget(val html: String) {
 
     inline fun <reified T : Widget> create(crossinline function: () -> T) =
         PropertyDelegateProvider { _: Any?, property ->
-            val instance: T = function()
-            instance.explicitContainer = getElement(property)
-            ReadOnlyProperty<Any?, T> { _, _ -> instance }
+            val instance = lazy { function().also { it.explicitContainer = getElement(property) } }
+            ReadOnlyProperty<Any?, T> { _, _ -> instance.value }
         }
 
 

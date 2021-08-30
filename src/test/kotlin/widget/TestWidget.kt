@@ -253,12 +253,32 @@ class TestWidget {
             override fun toString() = "-= $str =-"
         }
 
-        val target = Widget("""<gen-w id="id1"></gen-w>""")
-        val id1 by target.create { Gen1<HelperItem>() }
+        fun basic() {
+            val target = Widget("""<gen-w id="id1"></gen-w>""")
+            val id1 by target.create { Gen1<HelperItem>() }
 
-        id1.add(HelperItem("foo"))
-        id1.add(HelperItem("bar"))
-        assert(target.container.innerHTML).contains("-= foo =-", "-= bar =-")
+            id1.add(HelperItem("foo"))
+            id1.add(HelperItem("bar"))
+            assert(target.container.innerHTML).contains("-= foo =-", "-= bar =-")
+
+        }
+
+        fun bewareOfReentrance() {
+            class Target : Widget("""<gen-w id="id1"></gen-w>""") {
+                val id1 by create { Gen1<HelperItem>() }
+                override fun afterRender() {
+                    // calling id1 here will trigger reentrance
+                    // this is fixed using a lazy inside PropertyDelegateProvider of create()
+                    id1.add(HelperItem("foo2"))
+                    id1.add(HelperItem("bar2"))
+                }
+            }
+
+            assert(Target().container.innerHTML).contains("-= foo2 =-", "-= bar2 =-")
+        }
+
+        basic()
+        bewareOfReentrance()
     }
 }
 
